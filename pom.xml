@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2016.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>onyx-dtokit</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <parent>
+        <groupId>org.llaith.onyx</groupId>
+        <artifactId>onyx-superpom</artifactId>
+        <version>1.0</version>
+    </parent>
+
+    <properties>
+
+        <onyx-toolkit.version>1.0-SNAPSHOT</onyx-toolkit.version>
+        
+        <guava.version>23.0</guava.version>
+
+        <mbassador.version>1.2.0</mbassador.version>
+
+    </properties>
+
+    <dependencyManagement>
+
+        <dependencies>
+
+            <dependency>
+                <groupId>org.llaith.onyx</groupId>
+                <artifactId>onyx-toolkit</artifactId>
+                <version>${onyx-toolkit.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>net.engio</groupId>
+                <artifactId>mbassador</artifactId>
+                <version>${mbassador.version}</version>
+            </dependency>            
+
+        </dependencies>
+
+    </dependencyManagement>
+
+    <dependencies>
+
+        <!-- project deps -->
+        <dependency>
+            <groupId>org.llaith.onyx</groupId>
+            <artifactId>onyx-toolkit</artifactId>
+        </dependency>
+        
+        <!-- core deps -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.engio</groupId>
+            <artifactId>mbassador</artifactId>
+        </dependency>
+
+        <!-- logging deps -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+        <!-- testing deps -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-all</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <distributionManagement>
+        <repository>
+            <id>bintray-onyx-dtokit</id>
+            <name>bintray-llaith-onyx-dtokit</name>
+            <url>https://api.bintray.com/maven/llaith/onyx/onyx-dtokit/;publish=1</url>
+        </repository>
+    </distributionManagement>
+
+    <scm>
+        <url>ssh://git@gitlab.com:llaith/onyx-dtokit.git</url>
+        <connection>ssh://git@gitlab.com:llaith/onyx-dtokit.git</connection>
+        <developerConnection>ssh://git@gitlab.com:llaith/onyx-dtokit.git</developerConnection>
+    </scm>
+
+    <developers>
+        <developer>
+            <name>Nos Doughty</name>
+        </developer>
+    </developers>
+
+</project>
