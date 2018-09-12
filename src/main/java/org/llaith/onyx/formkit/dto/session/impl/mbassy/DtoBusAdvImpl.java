@@ -2,7 +2,7 @@
  * Copyright (c) 2016.
  */
 
-package org.llaith.onyx.formkit.dto.support.mbassy;
+package org.llaith.onyx.formkit.dto.session.impl.mbassy;
 
 import net.engio.mbassy.bus.MBassador;
 import net.engio.mbassy.bus.config.BusConfiguration;

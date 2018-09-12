@@ -6,19 +6,27 @@ package org.llaith.onyx.formkit.dto.session;
 
 
 import com.google.common.base.Supplier;
+import org.apache.commons.lang3.ObjectUtils;
 import org.llaith.onyx.formkit.dto.Dto;
 import org.llaith.onyx.formkit.dto.DtoCollection;
 import org.llaith.onyx.formkit.dto.DtoField;
+import org.llaith.onyx.toolkit.exception.UncheckedException;
+import org.llaith.onyx.toolkit.lang.PersistentIdentities.BasePersistentIdentity;
+import org.llaith.onyx.toolkit.lang.PersistentIdentities.PersistentIdentity;
 
-import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Set;
 
+import static java.util.Collections.singletonList;
+import static org.llaith.onyx.toolkit.lang.Guard.notNull;
+import static org.llaith.onyx.toolkit.lang.PersistentIdentities.equivalenceFields;
+
 /**
- * <P>
+ * <p>
  * The DtoSession is used to place built (identified) dto instances to be synchronised with each other.
  * The synchronization occurs on the acceptChanges/cancelChanges invocation, which means it is good practice
  * to call cancelChanges even if you plan to discard the dto, although this is not strictly necessary.
@@ -31,25 +39,70 @@ import java.util.Set;
  *
  *     Asset.Equals(dto1.getSomeField(),dto2.getSomeField());
  * </pre>
- *
+ * <p>
  * IMPORTANT NOTE: because adding dtos needs to be recursive, and i don;t want to reference count, we
  * instead leave them until the session is cleared(). The usage should reflect the fact that the
  * session should be cleared or popped altogether periodically.
- *
+ * <p>
  * For this reason the root layer has been changed to not accept objects after construction as they would
  * never be cleared.
- *
  */
 public class DtoSession {
+
 
     private final Supplier<DtoBus> busFactory;
 
     private final HashMap<Object,DtoBus> buses = new HashMap<>();
 
-    private final Set<Dto> root = new HashSet<>();
+    private final Deque<DtoLayer> layers = new LinkedList<>();
 
-    private final Deque<Set<Dto>> stack;
-    private final Deque<Object> bookmarks;
+    private final Set<Object> bookmarks = new HashSet<>();
+
+    private final DtoLayer root;
+
+    @PersistentIdentity
+    private static class DtoLayer extends BasePersistentIdentity implements Iterable<Dto> {
+
+        @PersistentIdentity
+        private final Object bookmark;
+
+        private final Set<Dto> contents = new HashSet<>();
+
+        public DtoLayer(final Object bookmark) {
+
+            this.bookmark = notNull(bookmark);
+
+        }
+
+        public <X extends Dto> X add(final X dto) {
+
+            this.contents.add(dto);
+
+            return dto;
+
+        }
+
+        public boolean contains(final Dto dto) {
+
+            return this.contents.contains(dto);
+
+        }
+
+        public void reset() {
+
+            this.contents.clear();
+
+        }
+
+        @Override
+        public Iterator<Dto> iterator() {
+
+            return new HashSet<>(contents).iterator();
+
+        }
+
+    }
+
 
     /**
      * Constructs a new DtoSession.
@@ -57,27 +110,13 @@ public class DtoSession {
      * @param busFactory a Supplier for creating new EventBus instances for
      *                   each identified Dto.
      */
-    public DtoSession(final Supplier<DtoBus> busFactory) {
+    public DtoSession(final Supplier<DtoBus> busFactory, final Object bookmark) {
+
         this.busFactory = busFactory;
 
-        this.stack = new LinkedList<>();
-        this.bookmarks = new LinkedList<>();
+        this.root = new DtoLayer(bookmark);
 
-        this.stack.add(this.root);
-    }
-
-    /**
-     * Constructs a new DtoSession with the passed in objects in the root session.
-     *
-     * @param busFactory a Supplier for creating new EventBus instances for
-     *                   each identified Dto.
-     */
-    public DtoSession(final Supplier<DtoBus> busFactory, final Collection<Dto> rootContents) {
-        this(busFactory);
-
-        for (final Dto dto: rootContents) {
-            this.registerDto(dto);
-        }
+        this.pushLayer(this.root);
 
     }
 
@@ -90,32 +129,53 @@ public class DtoSession {
      * @param bookmark the identifier used as the bookmark in order to pop
      *                 back to that point when finished.
      */
-    public Object push(final Object bookmark) {
-        this.bookmarks.push(bookmark);
+    public Object pushLayer(final Object bookmark) {
 
-        this.stack.push(new HashSet<>());
+        if (this.bookmarks.contains(notNull(bookmark))) throw new UncheckedException(String.format(
+                "Cannot push layer with duplicate bookmark: %s",
+                bookmark));
+
+        this.layers.push(new DtoLayer(bookmark));
 
         return bookmark;
+
+    }
+
+    public Object popLayer() {
+
+        final DtoLayer layer = this.layers.pop();
+
+        if (this.layers.isEmpty()) {
+
+            this.layers.add(this.root); // add it back
+
+            throw new UncheckedException("Cannot remove root-layer of dto-session");
+
+        }
+
+        return layer.bookmark;
+
     }
 
     /**
      * Rewind (pop) the stack back to the given bookmark, un-registering all DtoObjects
-     * stored in the popped layers from their EventBuses. If the bookmark cannot be found,
-     * the stack is unwound all the way and a new black layer is reset onto the bottom.
+     * stored in the popped layers from their EventBuses.
      *
      * @param bookmark the identifier that marks the point at which we want to
      *                 rewind the stack to.
      */
-    public Object pop(final Object bookmark) {
-        while (true) {
-            if ((this.bookmarks.isEmpty()) || (this.bookmarks.peek().equals(bookmark))) break;
-            this.bookmarks.pop();
-            this.stack.pop().clear();
+    public Object popToLayer(final Object bookmark) {
+
+        final Set<Object> lhs = new HashSet<>(singletonList(notNull(bookmark)));
+
+        while (ObjectUtils.notEqual(lhs, equivalenceFields(notNull(this.layers.peek())))) {
+
+            this.popLayer();
+
         }
 
-        if (this.stack.size() < 1) this.stack.add(this.root); // maybe clear it? or ditch the idea?
+        return this.popLayer();
 
-        return bookmark;
     }
 
     /**
@@ -129,18 +189,11 @@ public class DtoSession {
      */
     public <X extends Dto> X addDto(final X dto) {
 
-        if (this.stack.peek() == this.root) throw new IllegalStateException("Cannot add instances to the root session.");
+        // if new, will create a uuid-based identity for it
+        if (dto.isNew()) dto.acceptChanges();
 
-        this.registerDto(dto);
-
-        return dto;
-    }
-
-    private void registerDto(final Dto dto) {
-
-        if (dto.isNew()) dto.acceptChanges(); //throw new IllegalStateException("Cannot add new instances to a session.");
-
-        if (this.stack.peek().contains(dto)) return; // short circuit recursive cycles
+        // don't add twice
+        if (!this.layers.isEmpty() && this.layers.peek().contains(dto)) return dto;
 
         this.addDtoToBus(dto);
 
@@ -150,19 +203,26 @@ public class DtoSession {
 
         this.addChildrenToSession(dto);
 
+        return dto;
+
     }
 
     /**
      * Clears all the current layers dtos.
      */
-    public void clear() {
+    public void clearDtos() {
 
-        // to avoid leaking through the bus
-        for (final Dto dto : this.stack.peek()) {
+        if (this.layers.isEmpty()) return;
+
+        final DtoLayer current = this.layers.peek();
+
+        // to avoid hanging on to references via the bus
+        for (final Dto dto : current) {
             this.removeDtoFromBus(dto);
         }
 
-        this.stack.peek().clear();
+        current.reset();
+
     }
 
     private void addNestedToSession(final Dto dto) {
@@ -170,7 +230,7 @@ public class DtoSession {
         for (final DtoField field : dto.fields().values()) {
             if (Dto.class.isAssignableFrom(field.type())) {
                 // what about the original/new/etc values? do we leave them behind in the session?
-                if (dto.has(field.name())) this.registerDto((Dto)dto.get(field.name()));
+                if (dto.has(field.name())) this.addDto((Dto)dto.get(field.name()));
             }
         }
 
@@ -183,7 +243,7 @@ public class DtoSession {
                 // what about the original/new/etc values? do we leave them behind in the session?
                 if (dto.has(field.name())) {
                     for (final Dto nested : (DtoCollection)dto.get(field.name())) {
-                        this.registerDto(nested);
+                        this.addDto(nested);
                     }
                 }
             }
@@ -212,7 +272,9 @@ public class DtoSession {
     }
 
     private void addDtoToSession(final Dto dto) {
-        this.stack.peek().add(dto);
+
+        this.layers.peek().add(dto);
+
     }
 
 }

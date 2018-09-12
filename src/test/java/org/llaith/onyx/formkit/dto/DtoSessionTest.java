@@ -17,7 +17,7 @@ public class DtoSessionTest extends AbstractDtoSessionTest {
     @Before
     public void setUpSession() throws Exception {
         this.sessions = new DtoSession(DtoBusImpl::new);
-        this.sessions.push("TEST");
+        this.sessions.pushLayer("TEST");
     }
 
     @Override

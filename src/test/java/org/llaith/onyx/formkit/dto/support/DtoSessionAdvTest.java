@@ -8,7 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.llaith.onyx.formkit.dto.AbstractDtoSessionTest;
 import org.llaith.onyx.formkit.dto.session.DtoSession;
-import org.llaith.onyx.formkit.dto.support.mbassy.DtoBusAdvImpl;
+import org.llaith.onyx.formkit.dto.session.impl.mbassy.DtoBusAdvImpl;
 
 /**
  *
@@ -18,7 +18,7 @@ public class DtoSessionAdvTest extends AbstractDtoSessionTest {
     @Before
     public void setUpSession() throws Exception {
         this.sessions = new DtoSession(DtoBusAdvImpl::new);
-        this.sessions.push("TEST");
+        this.sessions.pushLayer("TEST");
     }
 
     @Override
