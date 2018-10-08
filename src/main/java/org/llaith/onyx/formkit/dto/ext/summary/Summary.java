@@ -1,10 +1,9 @@
-package org.llaith.onyx.formkit.dto.summary;
+package org.llaith.onyx.formkit.dto.ext.summary;
 
 
 import org.llaith.onyx.formkit.dto.Dto;
 import org.llaith.onyx.formkit.dto.session.DtoRefreshEvent;
 import org.llaith.onyx.formkit.dto.session.DtoRefreshListener;
-import org.llaith.onyx.formkit.dto.session.DtoSession;
 
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +26,7 @@ public class Summary implements DtoRefreshListener {
         return index;
     }
 
-    public void attachTo(final DtoSession dto) {
+    public void attachTo(final Dto dto) {
         this.dto = dto;
         for (final PropertyPath<?> id : this.properties.values()) {
             id.attach(dto);

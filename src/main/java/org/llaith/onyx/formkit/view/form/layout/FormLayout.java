@@ -15,7 +15,7 @@ import java.util.List;
 public class FormLayout implements Serializable {
 
 
-    private final List<FormSection> formSections = new ArrayList<FormSection>();
+    private final List<FormSection> formSections = new ArrayList<>();
 
     public FormLayout(final List<FormSection> formSections) {
         this.formSections.addAll(formSections);
@@ -23,7 +23,7 @@ public class FormLayout implements Serializable {
 
 
     public List<FormSection> formSections() {
-        return new ArrayList<FormSection>(this.formSections);
+        return new ArrayList<>(this.formSections);
     }
 
 }

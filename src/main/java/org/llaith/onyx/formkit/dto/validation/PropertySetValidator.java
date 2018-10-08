@@ -1,8 +1,7 @@
 package org.llaith.onyx.formkit.dto.validation;
 
 
-import com.llaith.dto.Dto;
-
+import org.llaith.onyx.formkit.dto.Dto;
 
 public interface PropertySetValidator<T extends Dto> {
 

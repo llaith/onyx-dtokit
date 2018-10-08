@@ -1,8 +1,7 @@
 package org.llaith.onyx.formkit.dto.validation;
 
 
-import com.llaith.dto.Dto;
-import com.llaith.util.misc.Id;
+import org.llaith.onyx.formkit.dto.Dto;
 
 import java.util.Arrays;
 import java.util.HashSet;

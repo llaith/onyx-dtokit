@@ -1,9 +1,9 @@
-package org.llaith.onyx.formkit.dto.template;
+package org.llaith.onyx.formkit.dto.ext.template;
 
 
-import com.llaith.dto.Dto;
 import org.antlr.stringtemplate.StringTemplate;
 import org.antlr.stringtemplate.language.DefaultTemplateLexer;
+import org.llaith.onyx.formkit.dto.Dto;
 
 import java.util.Map;
 
@@ -15,7 +15,6 @@ import java.util.Map;
  * Time: 21:11:58
  */
 public class AdvStringTemplate<T extends Dto> implements Template<T> {
-
 
     private final String template;
     private final Class<?> lexerClass;
@@ -30,15 +29,16 @@ public class AdvStringTemplate<T extends Dto> implements Template<T> {
     }
 
     @Override
-    public String process( final T dto) {
+    public String process(final T dto) {
+
         final StringTemplate template = new StringTemplate(this.template, this.lexerClass);
 
-        final Map<String, Object> vals = dto.get();
-        for (final String id : vals.keySet()) {
-            template.setAttribute(id, vals.get(id));
-        }
+        final Map<String,Object> vals = dto.currentValues();
+
+        for (final String id : vals.keySet()) template.setAttribute(id, vals.get(id));
 
         return template.toString();
 
     }
+
 }

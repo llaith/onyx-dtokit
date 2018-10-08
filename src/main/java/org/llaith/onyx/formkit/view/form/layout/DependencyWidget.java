@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static java.lang.String.*;
+
 
 /**
  * Created by IntelliJ IDEA.
@@ -21,7 +23,7 @@ import java.util.List;
  */
 public class DependencyWidget extends FieldWidget {
 
-    private final List<String> allValues = new ArrayList<String>();
+    private final List<String> allValues = new ArrayList<>();
     @Nullable
     private String currentValue = null;
 
@@ -36,9 +38,8 @@ public class DependencyWidget extends FieldWidget {
     }
 
     public void setCurrentValue(final String value) {
-        if (!this.allValues.contains(value)) throw new RuntimeException(String.format(
-                "Dependecy value: {0} is missing from allowed list: {1}",
-                new Object[]{value, this.allValues}));
+        if (!this.allValues.contains(value)) throw new RuntimeException(format(
+                "Dependecy value: %s is missing from allowed list: %s",value, this.allValues));
         this.currentValue = value;
     }
 

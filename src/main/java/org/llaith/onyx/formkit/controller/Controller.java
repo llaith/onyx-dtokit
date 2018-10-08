@@ -15,7 +15,7 @@ public interface Controller {
      *
      * @return itself.
      */
-    public Controller activate();
+    Controller activate();
 
     /**
      * Called when the controller has been pushed down the stack away from the top
@@ -24,7 +24,7 @@ public interface Controller {
      *
      * @return itself.
      */
-    public Controller deactivate();
+    Controller deactivate();
 
     /**
      * Called immediately the controller is requested to clean up before being popped off the stack.
@@ -39,7 +39,7 @@ public interface Controller {
      * @throws ControllerDisposeAbortException if the controller cannot allow itself to be popped off
      * the stack.
      */
-    public Controller willDispose() throws ControllerDisposeAbortException;
+    Controller willDispose() throws ControllerDisposeAbortException;
 
     /**
      * Called when the controller is about to be popped off the stack. At this point it is inevitable that
@@ -49,6 +49,6 @@ public interface Controller {
      *
      * @return itself.
      */
-    public Controller dispose();
+    Controller dispose();
 
 }

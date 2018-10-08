@@ -14,6 +14,6 @@
 @Maturity(ALPHA)
 package org.llaith.onyx.formkit.dto;
 
-import org.llaith.onyx.toolkit.etc.Maturity;
+import org.llaith.onyx.toolkit.etc.marker.Maturity;
 
-import static org.llaith.onyx.toolkit.etc.Maturity.MaturityLevel.ALPHA;
+import static org.llaith.onyx.toolkit.etc.marker.Maturity.MaturityLevel.ALPHA;

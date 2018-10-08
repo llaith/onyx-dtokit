@@ -2,7 +2,7 @@ package org.llaith.onyx.formkit.view.form.layout;
 
 
 import org.llaith.onyx.formkit.dto.validation.Property;
-import com.llaith.util.lang.Guard;
+import org.llaith.onyx.toolkit.lang.Guard;
 
 import javax.annotation.Nullable;
 
@@ -55,8 +55,8 @@ public class PropertyWidget<T> extends FieldWidget {
 
     public PropertyWidget(final String fieldLabel, final int order, final FieldAdapter<T> fieldAdapter, final Access access, final FieldDependency dependency) {
         super(fieldLabel, order);
-        this.fieldAdapter = Guard.expectParam("fieldAdapter",fieldAdapter);
-        this.access = Guard.expectParam("access",access);
+        this.fieldAdapter = Guard.notNull(fieldAdapter);
+        this.access = Guard.notNull(access);
         this.dependency = dependency;
     }
 

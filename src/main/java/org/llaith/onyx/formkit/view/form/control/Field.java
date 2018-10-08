@@ -4,8 +4,7 @@
 package org.llaith.onyx.formkit.view.form.control;
 
 
-import com.llaith.dto.Dto;
-import com.llaith.dto.memento.MementoDto;
+import org.llaith.onyx.formkit.dto.Dto;
 import org.llaith.onyx.formkit.dto.validation.Property;
 import org.llaith.onyx.formkit.dto.validation.PropertyValidationException;
 import org.llaith.onyx.formkit.view.form.layout.PropertyWidget;
@@ -78,8 +77,6 @@ public class Field<T> {
     private FieldReadWriteAdapter<T> rwViewAdapter = null;
 
     private Dto dto;
-    @Nullable
-    private MementoDto mdto;
 
     // exportable state
     @Nullable
@@ -108,17 +105,15 @@ public class Field<T> {
     public void attachDto(final Dto dto) {
         this.resetState();
         this.dto = dto;
-        if (this.dto instanceof MementoDto) this.mdto = (MementoDto)this.dto;
-        else this.mdto = null; // catches reset to null and non-instances
     }
 
     @SuppressWarnings("unchecked")
     public void toView() {
 
-        if ((this.rwViewAdapter != null) && (this.mdto != null)) {
-            this.rwViewAdapter.setDirty(this.mdto.dirty(this.propertyName));
-            this.rwViewAdapter.setMerged(this.mdto.updated(this.propertyName));
-            this.rwViewAdapter.setConflicted(this.mdto.conflicted(this.propertyName));
+        if ((this.rwViewAdapter != null) && (this.dto != null)) {
+            this.rwViewAdapter.setDirty(this.dto.dirty(this.propertyName));
+            this.rwViewAdapter.setMerged(this.dto.updated(this.propertyName));
+            this.rwViewAdapter.setConflicted(this.dto.conflicted(this.propertyName));
 
             if (this.error != null) this.rwViewAdapter.setError(this.error);
             else this.rwViewAdapter.clearError();

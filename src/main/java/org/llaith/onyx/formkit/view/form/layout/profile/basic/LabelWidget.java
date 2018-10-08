@@ -1,7 +1,7 @@
 package org.llaith.onyx.formkit.view.form.layout.profile.basic;
 
 
-import com.llaith.dto.Dto;
+import org.llaith.onyx.formkit.dto.Dto;
 import org.llaith.onyx.formkit.dto.validation.Property;
 import org.llaith.onyx.formkit.view.form.layout.PropertyWidget;
 

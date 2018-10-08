@@ -1,6 +1,8 @@
 package org.llaith.onyx.formkit.view.presenter.display;
 
-import org.llaith.onyx.formkit.view.DisplayableCloseVetoException;
+
+
+import org.llaith.onyx.formkit.controller.ControllerDisposeAbortException;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -26,7 +28,7 @@ public class StackableScreen implements Screen {
     }
 
     @Override
-    public void willClose() throws DisplayableCloseVetoException {
+    public void willClose() throws ControllerDisposeAbortException {
         for (final Iterator<Screen> it = this.stack.descendingIterator(); it.hasNext();) {
             it.next().willClose();
         }

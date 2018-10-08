@@ -1,9 +1,7 @@
 package org.llaith.onyx.formkit.dto.validation;
 
 
-import com.llaith.dto.Dto;
-import com.llaith.util.misc.Id;
-import com.llaith.util.misc.TypedId;
+import org.llaith.onyx.formkit.dto.Dto;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -15,13 +13,8 @@ import java.util.Map;
 
 
 /**
- *
+ * @param <T> Note: this doesn't use PropertySetValidators as that is a form concept.
  * @author llaith
- *
- * @param <T>
- *
- *            Note: this doesn't use PropertySetValidators as that is a form concept.
- *
  */
 public class DtoValidator<T extends Dto> {
 
@@ -37,11 +30,12 @@ public class DtoValidator<T extends Dto> {
     }
 
 
-    private Map<String,Property<?>> indexProperties( final Collection<Property<?>> properties) {
-        final Map<String,Property<?>> index = new HashMap<String,Property<?>>();
-        for (final Property<?> f : properties) {
-            index.put(f.id().name(),f);
-        }
+    private Map<String,Property<?>> indexProperties(final Collection<Property<?>> properties) {
+
+        final Map<String,Property<?>> index = new HashMap<>();
+
+        for (final Property<?> f : properties) index.put(f.id().name(), f);
+
         return index;
     }
 
@@ -49,7 +43,7 @@ public class DtoValidator<T extends Dto> {
         this.addProperties(Arrays.asList(properties));
     }
 
-    public void addProperties( final List<Property<?>> properties) {
+    public void addProperties(final List<Property<?>> properties) {
         this.properties.putAll(indexProperties(properties));
     }
 
@@ -57,19 +51,19 @@ public class DtoValidator<T extends Dto> {
         return this.properties.get(propertyName);
     }
 
-    public Property<?> property( final Id id) {
+    public Property<?> property(final Id id) {
         return this.property(id.name());
     }
 
 
     @SuppressWarnings("unchecked")
-    public <X>Property<X> property( final TypedId<X> id) {
+    public <X> Property<X> property(final TypedId<X> id) {
         return (Property<X>)this.property(id.name());
     }
 
 
     @SuppressWarnings("unchecked")
-    public <X>X propertyValue( final T dto,  final TypedId<X> id) {
+    public <X> X propertyValue(final T dto, final TypedId<X> id) {
         return (X)dto.get(id.name());
     }
 
@@ -79,7 +73,7 @@ public class DtoValidator<T extends Dto> {
     }
 
 
-    public List<String> validateUndefineds( final Id[] propertyIds) {
+    public List<String> validateUndefineds(final Id[] propertyIds) {
         final List<String> undefineds = new ArrayList<String>();
         for (final Id id : propertyIds) {
             if (!this.properties.containsKey(id.name())) undefineds.add(id.name());
@@ -88,34 +82,31 @@ public class DtoValidator<T extends Dto> {
     }
 
 
-    public Map<String,String> validateRequired( final T dto) {
-        final Map<String,String> fails = new HashMap<String,String>();
+    public Map<String,String> validateRequired(final T dto) {
+        final Map<String,String> fails = new HashMap<>();
         for (final Property<?> p : this.properties.values()) {
-            final String fail = failsRequired(dto,p);
-            if (fail != null) fails.put(p.id().name(),fail);
+            final String fail = failsRequired(dto, p);
+            if (fail != null) fails.put(p.id().name(), fail);
         }
         return fails;
     }
 
     @Nullable
-    private String failsRequired( final T dto,  final Property<?> property) {
-        if ((dto.get(property.id().name()) == null) && property.required()) return property.id().name() + " is required";
+    private String failsRequired(final T dto, final Property<?> property) {
+        if ((dto.get(property.id().name()) == null) && property.required())
+            return property.id().name() + " is required";
         return null;
     }
 
 
-    public Map<String,String> validateErrors( final T dto) {
-        final Map<String,String> fails = new HashMap<String,String>();
+    public Map<String,String> validateErrors(final T dto) {
+        final Map<String,String> fails = new HashMap<>();
         for (final Property<?> f : this.properties.values()) {
             try {
                 final Object val = dto.get(f.id().name());
                 if (val != null) f.validate(val);
-            }
-            catch ( final ClassCastException e) {
-                fails.put(f.id().name(),e.getMessage());
-            }
-            catch ( final PropertyValidationException e) {
-                fails.put(f.id().name(),e.getMessage());
+            } catch (final ClassCastException | PropertyValidationException e) {
+                fails.put(f.id().name(), e.getMessage());
             }
         }
         return fails;

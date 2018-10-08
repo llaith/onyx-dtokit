@@ -1,7 +1,7 @@
-package org.llaith.onyx.formkit.dto.template;
+package org.llaith.onyx.formkit.dto.ext.template;
 
 
-import com.llaith.dto.Dto;
+import org.llaith.onyx.formkit.dto.Dto;
 
 import java.io.Serializable;
 

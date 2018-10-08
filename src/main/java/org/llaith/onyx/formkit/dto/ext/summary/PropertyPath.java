@@ -1,10 +1,10 @@
-package org.llaith.onyx.formkit.dto.summary;
+package org.llaith.onyx.formkit.dto.ext.summary;
 
 
 import org.llaith.onyx.formkit.dto.Dto;
 
 /**
- * The coercion to T is safe if we only use the propertyId to set it also.
+ * The coercion to T is safe if we only use the property-path to set it also.
  *
  * @param <T>
  * @author llaith

@@ -26,6 +26,9 @@
 
         <mbassador.version>1.2.0</mbassador.version>
 
+        <antlr.version>3.2.1</antlr.version>
+
+
     </properties>
 
     <dependencyManagement>
@@ -48,8 +51,14 @@
                 <groupId>net.engio</groupId>
                 <artifactId>mbassador</artifactId>
                 <version>${mbassador.version}</version>
-            </dependency>            
+            </dependency>
 
+            <dependency>
+                <groupId>org.antlr</groupId>
+                <artifactId>stringtemplate</artifactId>
+                <version>${antlr.version}</version>
+            </dependency>
+            
         </dependencies>
 
     </dependencyManagement>
@@ -70,6 +79,10 @@
         <dependency>
             <groupId>net.engio</groupId>
             <artifactId>mbassador</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>stringtemplate</artifactId>
         </dependency>
 
         <!-- logging deps -->

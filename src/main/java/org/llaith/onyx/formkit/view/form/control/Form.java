@@ -1,7 +1,7 @@
 package org.llaith.onyx.formkit.view.form.control;
 
 
-import com.llaith.dto.Dto;
+import org.llaith.onyx.formkit.dto.Dto;
 import org.llaith.onyx.formkit.dto.validation.PropertySetValidationException;
 import org.llaith.onyx.formkit.dto.validation.PropertySetValidator;
 
@@ -147,7 +147,7 @@ public class Form<T extends Dto> implements Serializable {
 
 
     private final Map<String,Field<?>> fields;
-    private final Set<PropertySetValidator<T>> propertySetValidators = new HashSet<PropertySetValidator<T>>();
+    private final Set<PropertySetValidator<T>> propertySetValidators = new HashSet<>();
 
     private final T dto;
 
@@ -158,7 +158,7 @@ public class Form<T extends Dto> implements Serializable {
 
 
     private Map<String,Field<?>> indexFields( final Set<Field<?>> fields) {
-        final Map<String,Field<?>> map = new HashMap<String,Field<?>>();
+        final Map<String,Field<?>> map = new HashMap<>();
         for (final Field<?> f : fields) {
             map.put(f.property().id().name(),f);
         }
