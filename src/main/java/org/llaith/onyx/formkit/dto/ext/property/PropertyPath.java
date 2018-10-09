@@ -1,15 +1,12 @@
-package org.llaith.onyx.formkit.dto.ext.summary;
+package org.llaith.onyx.formkit.dto.ext.property;
 
 
 import org.llaith.onyx.formkit.dto.Dto;
 
 /**
- * The coercion to T is safe if we only use the property-path to set it also.
- *
- * @param <T>
  * @author llaith
  */
-public class PropertyPath<T> {
+public class PropertyPath {
 
     private final String path;
     private final String[] branches;
@@ -57,36 +54,35 @@ public class PropertyPath<T> {
 
     }
 
-    public void set(final T value) {
+    public void set(final Object value) {
 
         this.from(this.dto).set(this.leaf, value);
 
     }
 
-    @SuppressWarnings("unchecked")
-    public T get() {
+    public Object get() {
 
-        return (T)this.from(this.dto).get(this.leaf);
+        return this.from(this.dto).get(this.leaf);
 
     }
 
     @SuppressWarnings("squid:S2692")
     private Dto from(final Dto dto) {
-        
+
         Dto search = dto;
-        
+
         if (this.path.indexOf('.') > 0) { // ignore first element
-            
+
             for (final String s : this.branches) {
-                
+
                 search = (Dto)dto.get(s);
-                
+
             }
-            
+
         }
-        
+
         return search;
-        
+
     }
 
 }

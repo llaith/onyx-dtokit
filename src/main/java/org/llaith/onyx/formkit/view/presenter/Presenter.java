@@ -1,6 +1,6 @@
 package org.llaith.onyx.formkit.view.presenter;
 
-import org.llaith.onyx.formkit.view.Displayable;
+import org.llaith.onyx.formkit.controller.Controller;
 
 /**
  * Created by IntelliJ IDEA.
@@ -37,7 +37,7 @@ import org.llaith.onyx.formkit.view.Displayable;
  *
  *
  */
-public interface Presenter<V,M> extends Displayable {
+public interface Presenter<V,M> extends Controller {
 
     void bindView(V view);
 

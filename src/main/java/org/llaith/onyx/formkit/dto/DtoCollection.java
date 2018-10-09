@@ -16,6 +16,11 @@ import java.util.Set;
 
 
 /**
+ * TODO: change this to a map to allow expressions to access: 
+ * Where the collection would have been a set, use a simple 'int' like an array
+ * Where the collection would be saved, use the id field.
+ * 
+ * old >>>
  *
  * Why not a TransactionalList? A List cannot practically track it's additions
  * and deletions, a set can. Sets and Maps are 'pure' collections. A list, in

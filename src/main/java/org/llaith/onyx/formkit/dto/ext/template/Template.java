@@ -14,6 +14,6 @@ import java.io.Serializable;
  */
 public interface Template<T extends Dto> extends Serializable {
 
-    public String process(T dto);
+    String process(T dto);
 
 }

@@ -5,8 +5,6 @@ import org.antlr.stringtemplate.StringTemplate;
 import org.antlr.stringtemplate.language.DefaultTemplateLexer;
 import org.llaith.onyx.formkit.dto.Dto;
 
-import java.util.Map;
-
 
 /**
  * Created by IntelliJ IDEA.
@@ -17,27 +15,34 @@ import java.util.Map;
 public class AdvStringTemplate<T extends Dto> implements Template<T> {
 
     private final String template;
+    
     private final Class<?> lexerClass;
 
     public AdvStringTemplate(final String template) {
+
         this(template, DefaultTemplateLexer.class);
+
     }
 
     public AdvStringTemplate(final String template, final Class<?> lexerClass) {
+
         this.template = template;
+
         this.lexerClass = lexerClass;
+
     }
 
     @Override
     public String process(final T dto) {
 
-        final StringTemplate template = new StringTemplate(this.template, this.lexerClass);
+        final StringTemplate st = new StringTemplate(
+                this.template,
+                this.lexerClass);
 
-        final Map<String,Object> vals = dto.currentValues();
+        dto.currentValues()
+           .forEach(st::setAttribute);
 
-        for (final String id : vals.keySet()) template.setAttribute(id, vals.get(id));
-
-        return template.toString();
+        return st.toString();
 
     }
 

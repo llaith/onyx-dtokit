@@ -1,5 +1,7 @@
-package org.llaith.onyx.formkit.view.presenter.display;
+package org.llaith.onyx.formkit.view.presenter;
 
+import org.llaith.onyx.formkit.controller.Controller;
+import org.llaith.onyx.formkit.controller.ControllerDisposeAbortException;
 import org.llaith.onyx.formkit.view.DisplayableCloseVetoException;
 import org.llaith.onyx.formkit.view.presenter.Presenter;
 
@@ -9,11 +11,11 @@ import org.llaith.onyx.formkit.view.presenter.Presenter;
  * Date: 12/01/2012
  * Time: 07:08
  */
-public class PresenterScreen implements Screen {
+public class PresenterController implements Controller {
 
     private final Presenter<?,?> presenter;
 
-    public PresenterScreen(final Presenter<?, ?> presenter) {
+    public PresenterController(final Presenter<?,?> presenter) {
         this.presenter = presenter;
     }
 
@@ -42,4 +44,23 @@ public class PresenterScreen implements Screen {
         this.presenter.hide();
     }
 
+    @Override
+    public Controller activate() {
+        return null;
+    }
+
+    @Override
+    public Controller deactivate() {
+        return null;
+    }
+
+    @Override
+    public Controller willDispose() throws ControllerDisposeAbortException {
+        return null;
+    }
+
+    @Override
+    public Controller dispose() {
+        return null;
+    }
 }

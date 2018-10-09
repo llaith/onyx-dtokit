@@ -21,7 +21,7 @@ import java.util.Iterator;
  */
 public class ControllerStack<T extends Controller> {
 
-    private Deque<T> controllerStack = new ArrayDeque<>();
+    private Deque<T> stack = new ArrayDeque<>();
 
     private Deque<ControllerStack<T>> controllerStacks = new ArrayDeque<>();
 
@@ -40,7 +40,7 @@ public class ControllerStack<T extends Controller> {
      * @return the controller that is the current top of the stack.
      */
     public T top() {
-        return this.controllerStack.peek();
+        return this.stack.peek();
     }
 
     /**
@@ -51,7 +51,7 @@ public class ControllerStack<T extends Controller> {
      * @return the passed controller param.
      */
     public final T push(final T controller) {
-        this.controllerStack.push(controller);
+        this.stack.push(controller);
 
         controller.activate();
 
@@ -83,11 +83,11 @@ public class ControllerStack<T extends Controller> {
      */
     public void pop() throws ControllerDisposeAbortException{
         try {
-            this.controllerStack.peek().willDispose();
+            this.stack.peek().willDispose();
             this.popAllSiblings();
             this.closeAndPop();
         } finally {
-            this.controllerStack.peek().activate();
+            this.stack.peek().activate();
         }
     }
 
@@ -98,7 +98,7 @@ public class ControllerStack<T extends Controller> {
     public void forcePop() {
         this.forcePopAllSiblings();
         this.closeAndPop();
-        this.controllerStack.peek().activate();
+        this.stack.peek().activate();
     }
 
     /**
@@ -112,7 +112,7 @@ public class ControllerStack<T extends Controller> {
      * @throws ControllerDisposeAbortException if the rewind process was aborted.
      */
     public T rewindTo(final T controller) throws ControllerDisposeAbortException {
-        for (Iterator<T> it = this.controllerStack.descendingIterator(); it.hasNext();) {
+        for (Iterator<T> it = this.stack.descendingIterator(); it.hasNext();) {
             if (it.next() == controller) return controller;
             this.pop(); // will activate and deactivate each controller in turn
         }
@@ -126,7 +126,7 @@ public class ControllerStack<T extends Controller> {
      * @param controller the controller to rewind the stack until it is the top.
      */
     public T forceRewindTo(final T controller) {
-        for (Iterator<T> it = this.controllerStack.descendingIterator(); it.hasNext();) {
+        for (Iterator<T> it = this.stack.descendingIterator(); it.hasNext();) {
             if (it.next() == controller) return controller;
             this.forcePop(); // will activate and deactivate each controller in turn
         }
@@ -158,9 +158,9 @@ public class ControllerStack<T extends Controller> {
 
 
     private void closeAndPop() {
-        this.controllerStack.peek().deactivate();
-        this.controllerStack.peek().dispose();
-        this.controllerStack.pop();
+        this.stack.peek().deactivate();
+        this.stack.peek().dispose();
+        this.stack.pop();
     }
 
     private void popAllSiblings() throws ControllerDisposeAbortException {
