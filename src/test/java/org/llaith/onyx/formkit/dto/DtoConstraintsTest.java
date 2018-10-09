@@ -31,7 +31,9 @@ public class DtoConstraintsTest {
     @Test
     public void clearingRequiredValuesIsOkWhenNew() throws Exception {
         assertThat(
-                toDto(newContact()).setThis("email", null).get("email", String.class),
+                toDto(newContact())
+                        .setThis("email", null)
+                        .get("email", String.class),
                 is(nullValue()));
     }
 

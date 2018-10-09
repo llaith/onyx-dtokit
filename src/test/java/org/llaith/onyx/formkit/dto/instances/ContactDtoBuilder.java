@@ -12,8 +12,9 @@ import org.llaith.onyx.formkit.dto.ext.PojoDtoFactory;
 import org.llaith.onyx.formkit.transferobject.ValuesTransfer;
 import org.llaith.onyx.formkit.transferobject.impl.PojoTransferAdapter;
 
-import java.util.Arrays;
 import java.util.HashSet;
+
+import static java.util.Collections.singletonList;
 
 /**
  *
@@ -33,14 +34,12 @@ public class ContactDtoBuilder {
     private final static DtoTransferAdapter dtoExtraAdapter = new DtoTransferAdapter(
             PojoDtoFactory.newSupplier(
                     ContactData.class,
-                    () -> {
-                        return new HashSet<>(Arrays.asList(new DtoField(
-                                "extra",
-                                String.class,
-                                false,
-                                false,
-                                false)));
-                    }))
+                    () -> new HashSet<>(singletonList(new DtoField(
+                            "extra",
+                            String.class,
+                            false,
+                            false,
+                            false)))))
             .addSelfNestedAdapter("partner")
             .addSelfNestedAdapter("relations");
 

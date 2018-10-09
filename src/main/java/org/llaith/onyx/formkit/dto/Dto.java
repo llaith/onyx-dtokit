@@ -18,7 +18,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.UUID;
 
 
 /**
@@ -52,82 +51,31 @@ import java.util.UUID;
  */
 public final class Dto implements ChangeTracked {
 
-    public static class Identity {
-
-        private final Object domain;
-        private final Map<String, Object> identity;
-        private final Dto dto;
-
-        private Identity(final Dto dto) {
-
-            this.dto = dto;
-
-            // create an identity from the IMMUTABLE identifying values.
-            this.domain = this.dto.name();
-            this.identity = new HashMap<>(this.identityValues());
-
-            // we need to add a random identity if the object has none (we don't want this null)
-            if (this.identity.isEmpty()) this.identity.put(
-                    UUID.randomUUID().toString(),
-                    UUID.randomUUID()); // double random - no chance of conflict
-        }
-
-        public Map<String, Object> identityValues() {
-
-            final Map<String, Object> map = new HashMap<>();
-
-            for (final Map.Entry<String, DtoField> entry : this.dto.identityIndex.entrySet()) {
-
-                final Object value = entry.getValue().currentValue();
-
-                if (value == null) throw new UncheckedException(String.format(
-                        "The identity field: %s is null",
-                        entry.getKey()));
-
-                map.put(
-                        entry.getKey(),
-                        value);
-            }
-
-            return map;
-        }
-
-        @Override
-        public boolean equals(final Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            final Identity identity1 = (Identity) o;
-
-            if (domain != null ? !domain.equals(identity1.domain) : identity1.domain != null) return false;
-            if (identity != null ? !identity.equals(identity1.identity) : identity1.identity != null) return false;
-
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int result = domain != null ? domain.hashCode() : 0;
-            result = 31 * result + (identity != null ? identity.hashCode() : 0);
-            return result;
-        }
-    }
-
     private final MetadataDelegate metadata = new MetadataDelegate();
 
-    private final String name;
+    private final String identityName;
+    private final Map<String,DtoField> identityIndex = new HashMap<>();
 
-    private final Map<String, DtoField> valueIndex = new HashMap<>();
-    private final Map<String, ChangeTrackedCyclicWrapper> cycleIndex = new HashMap<>();
-    private final Map<String, DtoField> identityIndex = new HashMap<>();
+    private final String dtoName;
+    private final Map<String,DtoField> valueIndex = new HashMap<>();
 
-    private Identity identity;
+    private final Map<String,ChangeTrackedCyclicWrapper> cycleIndex = new HashMap<>();
+
+    private DtoIdentity identity = null;
 
     private DtoBus bus = null;
 
-    public Dto(final String name, final Collection<DtoField> values) {
+    public Dto(final String identityName, final Collection<DtoField> values) {
 
-        this.name = Guard.notNull(name);
+        this(identityName, identityName, values);
+
+    }
+
+    public Dto(final String identityName, final String dtoName, final Collection<DtoField> values) {
+
+        this.identityName = Guard.notNull(identityName);
+
+        this.dtoName = Guard.notNull(dtoName);
 
         this.valueIndex.putAll(this.indexValues(values));
 
@@ -137,9 +85,9 @@ public final class Dto implements ChangeTracked {
 
     }
 
-    private Map<String, DtoField> indexValues(final Collection<DtoField> values) {
+    private Map<String,DtoField> indexValues(final Collection<DtoField> values) {
 
-        final Map<String, DtoField> index = new HashMap<>();
+        final Map<String,DtoField> index = new HashMap<>();
 
         for (final DtoField value : values) {
             index.put(
@@ -150,9 +98,9 @@ public final class Dto implements ChangeTracked {
         return index;
     }
 
-    private Map<String, ChangeTrackedCyclicWrapper> indexCycles(final Collection<DtoField> values) {
+    private Map<String,ChangeTrackedCyclicWrapper> indexCycles(final Collection<DtoField> values) {
 
-        final Map<String, ChangeTrackedCyclicWrapper> index = new HashMap<>();
+        final Map<String,ChangeTrackedCyclicWrapper> index = new HashMap<>();
 
         for (final DtoField value : values) {
             index.put(
@@ -163,9 +111,9 @@ public final class Dto implements ChangeTracked {
         return index;
     }
 
-    private Map<String, DtoField> indexIdentity(final Collection<DtoField> values) {
+    private Map<String,DtoField> indexIdentity(final Collection<DtoField> values) {
 
-        final Map<String, DtoField> index = new HashMap<>();
+        final Map<String,DtoField> index = new HashMap<>();
 
         for (final DtoField value : values) {
             if (value.isIdentity()) this.identityIndex.put(
@@ -180,19 +128,23 @@ public final class Dto implements ChangeTracked {
         return this.identity == null;
     }
 
-    public Identity identity() {
+    public DtoIdentity identity() {
         return this.identity;
     }
 
-    public String name() {
-        return this.name;
+    public String identityName() {
+        return identityName;
     }
 
-    public Map<String, DtoField> fields() {
+    public String dtoName() {
+        return dtoName;
+    }
 
-        final Map<String, DtoField> map = new HashMap<>();
+    public Map<String,DtoField> fields() {
 
-        for (final Entry<String, DtoField> entry : this.valueIndex.entrySet()) {
+        final Map<String,DtoField> map = new HashMap<>();
+
+        for (final Entry<String,DtoField> entry : this.valueIndex.entrySet()) {
             map.put(
                     entry.getKey(),
                     entry.getValue());
@@ -212,7 +164,7 @@ public final class Dto implements ChangeTracked {
             Primitive<?> p = Primitive.primitiveFor(klass);
             if (p != null && p.wrapperClass().isAssignableFrom(this.get(name).getClass())) {
                 // Extreme cheating, to mess with boxing, but seems to work anyway due to unboxing!
-                return (X) p.wrapperClass().cast(this.get(name));
+                return (X)p.wrapperClass().cast(this.get(name));
             }
         }
 
@@ -239,7 +191,7 @@ public final class Dto implements ChangeTracked {
         }
     }
 
-    public void setValues(final Map<String, Object> map) {
+    public void setValues(final Map<String,Object> map) {
         for (String id : map.keySet()) {
             this.set(id, map.get(id));
         }
@@ -252,7 +204,7 @@ public final class Dto implements ChangeTracked {
         }
     }
 
-    public void resetValues(final Map<String, Object> map) {
+    public void resetValues(final Map<String,Object> map) {
         for (String id : map.keySet()) {
             this.reset(id, map.get(id));
         }
@@ -280,11 +232,11 @@ public final class Dto implements ChangeTracked {
         return this.dtoFieldFor(name).isInitialized();
     }
 
-    public Map<String, Object> currentValues() {
+    public Map<String,Object> currentValues() {
 
-        final Map<String, Object> map = new HashMap<>();
+        final Map<String,Object> map = new HashMap<>();
 
-        for (final Entry<String, DtoField> entry : this.valueIndex.entrySet()) {
+        for (final Entry<String,DtoField> entry : this.valueIndex.entrySet()) {
             if (entry.getValue().isInitialized()) map.put(
                     entry.getKey(),
                     entry.getValue().currentValue());
@@ -293,11 +245,11 @@ public final class Dto implements ChangeTracked {
         return map;
     }
 
-    public Map<String, Object> originalValues() {
+    public Map<String,Object> originalValues() {
 
-        final Map<String, Object> map = new HashMap<>();
+        final Map<String,Object> map = new HashMap<>();
 
-        for (final Entry<String, DtoField> entry : this.valueIndex.entrySet()) {
+        for (final Entry<String,DtoField> entry : this.valueIndex.entrySet()) {
             map.put(
                     entry.getKey(),
                     entry.getValue().originalValue());
@@ -306,11 +258,11 @@ public final class Dto implements ChangeTracked {
         return map;
     }
 
-    public Map<String, DtoField> dirtyFields() {
+    public Map<String,DtoField> dirtyFields() {
 
-        final Map<String, DtoField> map = new HashMap<>();
+        final Map<String,DtoField> map = new HashMap<>();
 
-        for (final Entry<String, DtoField> entry : this.valueIndex.entrySet()) {
+        for (final Entry<String,DtoField> entry : this.valueIndex.entrySet()) {
             if (entry.getValue().isDirty()) map.put(
                     entry.getKey(),
                     entry.getValue());
@@ -319,11 +271,11 @@ public final class Dto implements ChangeTracked {
         return map;
     }
 
-    public Map<String, Object> dirtyValues() {
+    public Map<String,Object> dirtyValues() {
 
-        final Map<String, Object> map = new HashMap<>();
+        final Map<String,Object> map = new HashMap<>();
 
-        for (final Entry<String, DtoField> entry : this.valueIndex.entrySet()) {
+        for (final Entry<String,DtoField> entry : this.valueIndex.entrySet()) {
             if (entry.getValue().isDirty()) map.put(
                     entry.getKey(),
                     entry.getValue().currentValue());
@@ -332,11 +284,11 @@ public final class Dto implements ChangeTracked {
         return map;
     }
 
-    public Map<String, DtoField> staleFields() {
+    public Map<String,DtoField> staleFields() {
 
-        final Map<String, DtoField> map = new HashMap<>();
+        final Map<String,DtoField> map = new HashMap<>();
 
-        for (final Entry<String, DtoField> entry : this.valueIndex.entrySet()) {
+        for (final Entry<String,DtoField> entry : this.valueIndex.entrySet()) {
             if (entry.getValue().isStale()) map.put(
                     entry.getKey(),
                     entry.getValue());
@@ -345,11 +297,11 @@ public final class Dto implements ChangeTracked {
         return map;
     }
 
-    public Map<String, Object> staleValues() {
+    public Map<String,Object> staleValues() {
 
-        final Map<String, Object> map = new HashMap<>();
+        final Map<String,Object> map = new HashMap<>();
 
-        for (final Entry<String, DtoField> entry : this.valueIndex.entrySet()) {
+        for (final Entry<String,DtoField> entry : this.valueIndex.entrySet()) {
             if (entry.getValue().isStale()) map.put(
                     entry.getKey(),
                     entry.getValue().currentValue());
@@ -358,11 +310,11 @@ public final class Dto implements ChangeTracked {
         return map;
     }
 
-    public Map<String, DtoField> conflictedFields() {
+    public Map<String,DtoField> conflictedFields() {
 
-        final Map<String, DtoField> map = new HashMap<>();
+        final Map<String,DtoField> map = new HashMap<>();
 
-        for (final Entry<String, DtoField> entry : this.valueIndex.entrySet()) {
+        for (final Entry<String,DtoField> entry : this.valueIndex.entrySet()) {
             if (entry.getValue().isConflicted()) map.put(
                     entry.getKey(),
                     entry.getValue());
@@ -371,11 +323,11 @@ public final class Dto implements ChangeTracked {
         return map;
     }
 
-    public Map<String, Object> conflictedValues() {
+    public Map<String,Object> conflictedValues() {
 
-        final Map<String, Object> map = new HashMap<>();
+        final Map<String,Object> map = new HashMap<>();
 
-        for (final Entry<String, DtoField> entry : this.valueIndex.entrySet()) {
+        for (final Entry<String,DtoField> entry : this.valueIndex.entrySet()) {
             if (entry.getValue().isConflicted()) map.put(
                     entry.getKey(),
                     entry.getValue().currentValue());
@@ -395,21 +347,40 @@ public final class Dto implements ChangeTracked {
     }
 
     public void register(final DtoBus bus) {
-        if (this.isNew()) throw new IllegalStateException("Cannot register a new instance to a bus.");
 
+        // cannot assign to a null buss
+        Guard.notNull(bus);
+
+        // only allow one bus at a time
         if ((this.bus != null) && (this.bus != bus))
-            throw new IllegalStateException("Cannot register to additional bus.");
+            throw new IllegalStateException(String.format(
+                    "Already register to bus: %s, cannot also register with bus: %s.",
+                    this.bus,
+                    bus));
 
+        // set the bus
         this.bus = bus;
-        this.bus.register(this);
+
+        // only register it if there is an identity (remember we may be switching bus)
+        if (this.identity != null) this.bus.register(this);
+
     }
 
     public void unregister(final DtoBus bus) {
-        if (this.bus != bus)
-            throw new IllegalStateException("Cannot unregister from bus that is not registered tDataObject.this.");
 
-        this.bus.unregister(this);
+        // check we are unregistering from correct bus
+        if (this.bus != bus)
+            throw new IllegalStateException(String.format(
+                    "Cannot unregister to bus: %s when registered to bus: %s.",
+                    bus,
+                    this.bus));
+
+        // deregister only if we got an identity
+        if (this.identity != null) this.bus.unregister(this);
+
+        // unassign the bus
         this.bus = null;
+
     }
 
     @Override
@@ -439,8 +410,20 @@ public final class Dto implements ChangeTracked {
     @Override
     public void acceptChanges() {
 
+        // pass accept down tree
         for (final ChangeTracked field : this.cycleIndex.values()) {
             field.acceptChanges();
+        }
+
+        // if we were new, we have to do stuff
+        if (this.isNew()) {
+
+            // create the new identity (will no longer be 'new')
+            this.identity = this.toDtoIdentity();
+
+            // finish registering now we have identity info
+            if (this.bus != null) this.bus.register(this);
+
         }
 
         // we could fire these on reset also, but i'm going to say that the reset
@@ -449,7 +432,26 @@ public final class Dto implements ChangeTracked {
         // an additional resets if objects are not correctly cancelled when disposed.
         if (this.bus != null) this.bus.post(new DtoRefreshEvent(this));
 
-        if (this.isNew()) this.identity = new Identity(this);
+    }
+
+    private DtoIdentity toDtoIdentity() {
+
+        final Map<String,Object> identityValues = new HashMap<>();
+
+        for (final Map.Entry<String,DtoField> entry : this.identityIndex.entrySet()) {
+
+            final Object value = entry.getValue().currentValue();
+
+            if (value == null) throw new UncheckedException(String.format(
+                    "The identity field: %s is null",
+                    entry.getKey()));
+
+            identityValues.put(
+                    entry.getKey(),
+                    value);
+        }
+
+        return new DtoIdentity(this.identityName, identityValues);
 
     }
 
@@ -497,8 +499,8 @@ public final class Dto implements ChangeTracked {
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-                .add("fields", this.valueIndex.values())
-                .toString();
+                          .add("fields", this.valueIndex.values())
+                          .toString();
     }
 
 }

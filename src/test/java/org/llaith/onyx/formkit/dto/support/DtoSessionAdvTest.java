@@ -16,9 +16,8 @@ import org.llaith.onyx.formkit.dto.session.impl.mbassy.DtoBusAdvImpl;
 public class DtoSessionAdvTest extends AbstractDtoSessionTest {
 
     @Before
-    public void setUpSession() throws Exception {
-        this.sessions = new DtoSession(DtoBusAdvImpl::new);
-        this.sessions.pushLayer("TEST");
+    public void setUpSession() {
+        this.sessions = new DtoSession<>(DtoBusAdvImpl::new, "TEST");
     }
 
     @Override

@@ -47,28 +47,26 @@ import static org.llaith.onyx.toolkit.lang.PersistentIdentities.equivalenceField
  * For this reason the root layer has been changed to not accept objects after construction as they would
  * never be cleared.
  */
-public class DtoSession {
+public class DtoSession<T> {
 
 
     private final Supplier<DtoBus> busFactory;
 
     private final HashMap<Object,DtoBus> buses = new HashMap<>();
 
-    private final Deque<DtoLayer> layers = new LinkedList<>();
+    private final Deque<DtoLayer<T>> layers = new LinkedList<>();
 
-    private final Set<Object> bookmarks = new HashSet<>();
-
-    private final DtoLayer root;
+    private final Set<T> bookmarks = new HashSet<>();
 
     @PersistentIdentity
-    private static class DtoLayer extends BasePersistentIdentity implements Iterable<Dto> {
+    private static class DtoLayer<T> extends BasePersistentIdentity implements Iterable<Dto> {
 
         @PersistentIdentity
-        private final Object bookmark;
+        private final T bookmark;
 
         private final Set<Dto> contents = new HashSet<>();
 
-        public DtoLayer(final Object bookmark) {
+        public DtoLayer(final T bookmark) {
 
             this.bookmark = notNull(bookmark);
 
@@ -110,13 +108,11 @@ public class DtoSession {
      * @param busFactory a Supplier for creating new EventBus instances for
      *                   each identified Dto.
      */
-    public DtoSession(final Supplier<DtoBus> busFactory, final Object bookmark) {
+    public DtoSession(final Supplier<DtoBus> busFactory, final T rootBookmark) {
 
         this.busFactory = busFactory;
 
-        this.root = new DtoLayer(bookmark);
-
-        this.pushLayer(this.root);
+        this.pushLayer(rootBookmark);
 
     }
 
@@ -129,25 +125,25 @@ public class DtoSession {
      * @param bookmark the identifier used as the bookmark in order to pop
      *                 back to that point when finished.
      */
-    public Object pushLayer(final Object bookmark) {
+    public T pushLayer(final T bookmark) {
 
         if (this.bookmarks.contains(notNull(bookmark))) throw new UncheckedException(String.format(
                 "Cannot push layer with duplicate bookmark: %s",
                 bookmark));
 
-        this.layers.push(new DtoLayer(bookmark));
+        this.layers.push(new DtoLayer<>(bookmark));
 
         return bookmark;
 
     }
 
-    public Object popLayer() {
+    public T popLayer() {
 
-        final DtoLayer layer = this.layers.pop();
+        final DtoLayer<T> layer = this.layers.pop();
 
         if (this.layers.isEmpty()) {
 
-            this.layers.add(this.root); // add it back
+            this.layers.push(layer); // add it back
 
             throw new UncheckedException("Cannot remove root-layer of dto-session");
 
@@ -164,7 +160,7 @@ public class DtoSession {
      * @param bookmark the identifier that marks the point at which we want to
      *                 rewind the stack to.
      */
-    public Object popToLayer(final Object bookmark) {
+    public Object popToLayer(final T bookmark) {
 
         final Set<Object> lhs = new HashSet<>(singletonList(notNull(bookmark)));
 
@@ -214,7 +210,7 @@ public class DtoSession {
 
         if (this.layers.isEmpty()) return;
 
-        final DtoLayer current = this.layers.peek();
+        final DtoLayer<T> current = this.layers.peek();
 
         // to avoid hanging on to references via the bus
         for (final Dto dto : current) {
