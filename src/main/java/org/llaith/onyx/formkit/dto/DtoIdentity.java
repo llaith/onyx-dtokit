@@ -14,16 +14,16 @@ import java.util.UUID;
  */
 public class DtoIdentity {
 
-    private final Object identityName;
+    private final Object dtoName;
 
     private final UUID instanceValue;
 
     private final Map<String,Object> identityValues;
 
-    public DtoIdentity(final String identityName, final Map<String,Object> identityValues) {
+    public DtoIdentity(final String dtoName, final Map<String,Object> identityValues) {
 
         // create an identity from the IMMUTABLE identifying values.
-        this.identityName = Guard.notNull(identityName);
+        this.dtoName = Guard.notNull(dtoName);
 
         // assign the instance value (also used as identity if no other)
         this.instanceValue = UUID.randomUUID();
@@ -33,8 +33,8 @@ public class DtoIdentity {
 
     }
 
-    public Object getIdentityName() {
-        return identityName;
+    public Object getDtoName() {
+        return dtoName;
     }
 
     public UUID getInstanceValue() {
@@ -48,7 +48,7 @@ public class DtoIdentity {
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-                          .add("identityName", identityName)
+                          .add("dtoName", dtoName)
                           .add("instanceValue", instanceValue)
                           .add("identityValues", identityValues)
                           .toString();
@@ -73,13 +73,13 @@ public class DtoIdentity {
         // return based on instance if instance is set
         if (this.identityValues.isEmpty()) {
 
-            return Objects.equals(identityName, that.identityName) &&
+            return Objects.equals(dtoName, that.dtoName) &&
                     Objects.equals(instanceValue, that.instanceValue);
 
         }
 
         // else return the one based on the values
-        return Objects.equals(identityName, that.identityName) &&
+        return Objects.equals(dtoName, that.dtoName) &&
                 Objects.equals(identityValues, that.identityValues);
 
     }
@@ -87,10 +87,10 @@ public class DtoIdentity {
     private int ourHashCode() {
 
         // return based on instance if instance is set
-        if (this.identityValues.isEmpty()) return Objects.hash(identityName, instanceValue);
+        if (this.identityValues.isEmpty()) return Objects.hash(dtoName, instanceValue);
 
         // else return the one based on the values
-        return Objects.hash(identityName, identityValues);
+        return Objects.hash(dtoName, identityValues);
 
     }
 

@@ -53,10 +53,8 @@ public final class Dto implements ChangeTracked {
 
     private final MetadataDelegate metadata = new MetadataDelegate();
 
-    private final String identityName;
-    private final Map<String,DtoField> identityIndex = new HashMap<>();
-
     private final String dtoName;
+    private final Map<String,DtoField> identityIndex = new HashMap<>();
     private final Map<String,DtoField> valueIndex = new HashMap<>();
 
     private final Map<String,ChangeTrackedCyclicWrapper> cycleIndex = new HashMap<>();
@@ -65,15 +63,7 @@ public final class Dto implements ChangeTracked {
 
     private DtoBus bus = null;
 
-    public Dto(final String identityName, final Collection<DtoField> values) {
-
-        this(identityName, identityName, values);
-
-    }
-
-    public Dto(final String identityName, final String dtoName, final Collection<DtoField> values) {
-
-        this.identityName = Guard.notNull(identityName);
+    public Dto(final String dtoName, final Collection<DtoField> values) {
 
         this.dtoName = Guard.notNull(dtoName);
 
@@ -130,10 +120,6 @@ public final class Dto implements ChangeTracked {
 
     public DtoIdentity identity() {
         return this.identity;
-    }
-
-    public String identityName() {
-        return identityName;
     }
 
     public String dtoName() {
@@ -451,7 +437,7 @@ public final class Dto implements ChangeTracked {
                     value);
         }
 
-        return new DtoIdentity(this.identityName, identityValues);
+        return new DtoIdentity(this.dtoName, identityValues);
 
     }
 
