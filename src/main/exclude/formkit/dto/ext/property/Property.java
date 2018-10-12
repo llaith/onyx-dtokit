@@ -3,7 +3,6 @@ package org.llaith.onyx.formkit.dto.ext.property;
 
 import org.llaith.onyx.formkit.dto.validation.PropertyValidationException;
 import org.llaith.onyx.formkit.dto.validation.PropertyValidator;
-import org.llaith.onyx.formkit.dto.validation.TypedId;
 import org.llaith.onyx.toolkit.lang.Guard;
 
 import javax.annotation.Nullable;

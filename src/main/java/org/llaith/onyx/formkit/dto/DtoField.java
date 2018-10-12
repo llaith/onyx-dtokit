@@ -5,6 +5,7 @@
 package org.llaith.onyx.formkit.dto;
 
 
+import org.llaith.onyx.toolkit.exception.UncheckedException;
 import org.llaith.onyx.toolkit.lang.Guard;
 import org.llaith.onyx.toolkit.pattern.meta.MetadataContainer;
 import org.llaith.onyx.toolkit.pattern.meta.MetadataDelegate;
@@ -52,6 +53,10 @@ public class DtoField implements ChangeTracked {
         this.immutable = immutable;
         this.identity = identity;
 
+        if (identity && (!immutable)) throw new UncheckedException(String.format(
+                "Field: %s cannot be a mutable identity field.",
+                this.name));
+
     }
 
     /**
@@ -70,7 +75,6 @@ public class DtoField implements ChangeTracked {
     }
 
     /**
-     *
      * @return if this field is required
      */
     public boolean isRequired() {
@@ -78,7 +82,6 @@ public class DtoField implements ChangeTracked {
     }
 
     /**
-     *
      * @return if this field is immutable/final
      */
     public boolean isImmutable() {
@@ -86,7 +89,6 @@ public class DtoField implements ChangeTracked {
     }
 
     /**
-     *
      * @return if this field is an identity field
      */
     public boolean isIdentity() {
@@ -247,7 +249,7 @@ public class DtoField implements ChangeTracked {
     @Override
     public void acceptChanges() {
 
-        this.verify(this.currentValue);
+        this.checkMutable(this.currentValue);
 
         this.setOriginal(this.resetState(this.currentValue));
 
@@ -301,6 +303,7 @@ public class DtoField implements ChangeTracked {
      *  the object methods. Tries casting via the generic type.
      */
     private Object checkValueType(Object value) {
+
         if (value == null) return null;
 
         if (this.type.isAssignableFrom(value.getClass())) return this.type.cast(value); // allow subclasses
@@ -324,7 +327,7 @@ public class DtoField implements ChangeTracked {
      *  the same as validation, which is outside the Dto system, and this
      *  is not exposed directly, it is called via the acceptChanges.
      */
-    public void verify(Object value) {
+    public void checkMutable(Object value) {
 
         if ((value == null) && this.required)
             throw new IllegalStateException(String.format(
@@ -341,6 +344,24 @@ public class DtoField implements ChangeTracked {
         } else {
             this.built = true;
         }
+
+//        if (this.initialized) {
+//
+//            if (this.immutable && (value != this.originalValue))
+//                throw new IllegalStateException(String.format(
+//                        "Field: %s is immutable.",
+//                        this.name));
+//
+//        } else {
+//
+//            if ((value == null) && this.required)
+//                throw new IllegalStateException(String.format(
+//                        "Field: %s is required.",
+//                        this.name));
+//
+//            this.initialized = true;
+//
+//        }
 
     }
 

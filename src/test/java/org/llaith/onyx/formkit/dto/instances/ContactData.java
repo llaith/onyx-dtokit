@@ -6,7 +6,6 @@ package org.llaith.onyx.formkit.dto.instances;
 
 
 
-import org.llaith.onyx.toolkit.reflection.pojo.PojoModel.Identity;
 import org.llaith.onyx.toolkit.reflection.pojo.PojoModel.Immutable;
 import org.llaith.onyx.toolkit.reflection.pojo.PojoModel.NestedModel;
 import org.llaith.onyx.toolkit.reflection.pojo.PojoModel.Required;
@@ -19,7 +18,7 @@ import java.util.Set;
  */
 public class ContactData {
 
-    @Identity
+    @Immutable(identity = true)
     private String id;
     @Immutable
     private String name;

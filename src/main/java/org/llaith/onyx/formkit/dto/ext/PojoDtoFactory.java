@@ -59,7 +59,7 @@ public class PojoDtoFactory {
     }
 
     public Dto newFrom(final PojoModel model) {
-        return this.newFrom(model,null);
+        return this.newFrom(model, null);
     }
 
     public Dto newFrom(final PojoModel model, final Set<DtoField> extraFields) {
